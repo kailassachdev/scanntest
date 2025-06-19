@@ -12,6 +12,10 @@ import {
   RotateCcw,
   Lightbulb,
   ClipboardCheck,
+  Camera,
+  Video,
+  VideoOff,
+  ImageUp,
 } from 'lucide-react';
 
 export const Icons = {
@@ -29,6 +33,10 @@ export const Icons = {
   Retry: RotateCcw,
   Idea: Lightbulb,
   ClipboardCheck: ClipboardCheck,
+  Camera: Camera,
+  Video: Video,
+  VideoOff: VideoOff,
+  ImageUp: ImageUp,
 };
 
 export type IconName = keyof typeof Icons;
