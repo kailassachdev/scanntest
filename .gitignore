@@ -1,45 +1,75 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# Dependencies
 /node_modules
 /.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+.pnp.js
 
-# testing
-/coverage
-
-# next.js
+# Next.js build output
 /.next/
 /out/
 
-# production
-/build
+# Next.js cache
+.next/cache
 
-# misc
+# Production build artifacts
+# /build # Uncomment if you have a custom build script outputting to 'build'
+
+# Create React App
+# /build # CRA also uses 'build', uncomment if relevant
+
+# Static site generator output
+# /public # Be careful if your Next.js public folder has generated assets you don't want to track
+
+# Miscellaneous
 .DS_Store
 *.pem
+*.tgz
 
-# debug
+# Log files
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-.genkit/*
-.env*
-
-# firebase
+pnpm-debug.log*
 firebase-debug.log
-firestore-debug.log
+firebase-debug.*.log
+
+# Local environment variables
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# It's good practice to track .env.example or similar template files.
+# Example:
+# !.env.example
+
+# Editor directories and files
+.vscode/*
+!.vscode/settings.json
+# Add !.vscode/extensions.json if you want to share recommended extensions
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Compiled output (if not covered by .next or out)
+# /dist
+# /lib
+
+# Optional caches
+.eslintcache
+.prettiercache
+.stylelintcache
+
+# Dumps and archives
+*.stackdump
+
+# Test results
+/coverage
+/reports
+
+# Genkit - if it creates local state/logs not meant for VCS
+# .genkit/
+# *.genkit-state.json

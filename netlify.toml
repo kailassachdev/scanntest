@@ -1,0 +1,25 @@
+# Netlify configuration file
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  # Command to build your Next.js site
+  command = "next build"
+  
+  # Directory (relative to the root of your repo) that contains the deploy-ready assets.
+  # For Next.js, this is typically .next
+  publish = ".next"
+
+# Optional: Development server settings
+# These settings are used by `netlify dev`
+[dev]
+  command = "next dev" # Command to start your development server
+  port = 3000          # Port that the development server will run on
+  # targetPort = 9002 # If your app runs on a different port, specify it here
+  publish = ".next"    # Directory to serve static assets from in dev, if applicable
+
+# For most Next.js projects, Netlify's Essential Next.js Build Plugin
+# is automatically installed and configured. You usually don't need to add it manually.
+# If you need specific plugin configurations, you can add them like this:
+# [[plugins]]
+#   package = "@netlify/plugin-nextjs"
+  # Optional inputs for the plugin can go here
