@@ -77,7 +77,7 @@ export default function ImageUploadClientPage() {
           return;
         }
         try {
-          streamInstance = await navigator.mediaDevices.getUserMedia({ video: true });
+          streamInstance = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
           if (active) {
             setCameraStream(streamInstance);
             setHasCameraPermission(true);
@@ -95,7 +95,7 @@ export default function ImageUploadClientPage() {
             toast({
               variant: 'destructive',
               title: 'Camera Access Denied',
-              description: 'Please enable camera permissions in your browser settings.',
+              description: 'Please enable camera permissions in your browser settings. If the back camera is not available, it might use the front camera or fail.',
             });
           }
         }
