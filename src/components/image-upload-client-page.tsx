@@ -83,7 +83,6 @@ export default function ImageUploadClientPage() {
             setHasCameraPermission(true);
             if (videoRef.current) {
               videoRef.current.srcObject = streamInstance;
-              // Explicit play removed to rely on autoPlay and prevent interruption errors
             }
           } else {
             streamInstance?.getTracks().forEach(track => track.stop());
@@ -366,6 +365,9 @@ export default function ImageUploadClientPage() {
           </Button>
         </CardContent>
       </Card>
+      <footer className="mt-8 text-center text-sm text-muted-foreground">
+        <p>&copy; Kailas Sachdev 2025</p>
+      </footer>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -155,6 +156,9 @@ export default function TestClientPage() {
           </div>
         </CardFooter>
       </Card>
+      <footer className="mt-8 text-center text-sm text-muted-foreground">
+        <p>&copy; Kailas Sachdev 2025</p>
+      </footer>
     </div>
   );
 }
