@@ -89,7 +89,7 @@ export default function ResultsClientPage() {
           <Separator />
 
           <h3 className="text-xl font-semibold">Answer Breakdown:</h3>
-          <ScrollArea className="max-h-[40vh] sm:max-h-[55vh] md:max-h-[65vh] w-full">
+          <ScrollArea className="max-h-[320px] sm:max-h-[450px] md:max-h-[60vh] w-full">
             <Accordion type="single" collapsible className="w-full">
               {questions.map((q, index) => {
                 const userAnswer = userAnswers[index];
