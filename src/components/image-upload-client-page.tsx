@@ -259,7 +259,7 @@ export default function ImageUploadClientPage() {
           </div>
           <CardTitle className="text-3xl font-bold">Scan N Test</CardTitle>
           <CardDescription className="text-md">
-            Upload or capture a book page image. We&apos;ll generate NEET-level questions!
+            Upload or capture a book page image. Your brother will generate NEET-level questions!
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
