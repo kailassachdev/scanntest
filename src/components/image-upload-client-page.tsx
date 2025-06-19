@@ -27,7 +27,6 @@ export default function ImageUploadClientPage() {
     imagePreview,
     setImagePreview,
     setQuestions,
-    // resetTest, // Avoid full reset that clears imagePreview
     isGenerating,
     setIsGenerating,
     generationProgress,
@@ -35,8 +34,7 @@ export default function ImageUploadClientPage() {
     generationStatus,
     setGenerationStatus,
     setError: setContextError,
-    // Manually call setters instead of full resetTest
-    setUserAnswer: _setUserAnswerInternal, // to avoid conflicts with potential page-level usage
+    setUserAnswer: _setUserAnswerInternal, 
     setStartTime: _setStartTimeInternal,
     setEndTime: _setEndTimeInternal,
 
@@ -45,7 +43,6 @@ export default function ImageUploadClientPage() {
   const [file, setFile] = useState<File | null>(null);
   const [inputMode, setInputMode] = useState<'upload' | 'camera'>('upload');
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-  const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -55,7 +52,6 @@ export default function ImageUploadClientPage() {
       cameraStream.getTracks().forEach(track => track.stop());
       setCameraStream(null);
     }
-    setIsCameraActive(false);
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
@@ -71,7 +67,6 @@ export default function ImageUploadClientPage() {
             description: 'Your browser does not support camera access.',
           });
           setHasCameraPermission(false);
-          setIsCameraActive(false);
           return;
         }
         try {
@@ -80,13 +75,18 @@ export default function ImageUploadClientPage() {
           setHasCameraPermission(true);
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
-            // videoRef.current.play(); // autoPlay should handle this
-            setIsCameraActive(true);
+            videoRef.current.play().catch(error => {
+              console.error("Error attempting to play video:", error);
+              toast({ variant: 'destructive', title: 'Camera Error', description: 'Could not start video playback.'});
+              // Attempt to stop stream if play fails significantly
+              stream.getTracks().forEach(track => track.stop());
+              setCameraStream(null);
+              setHasCameraPermission(false); // Revert permission status if play is critical
+            });
           }
         } catch (error) {
           console.error('Error accessing camera:', error);
           setHasCameraPermission(false);
-          setIsCameraActive(false);
           toast({
             variant: 'destructive',
             title: 'Camera Access Denied',
@@ -100,10 +100,7 @@ export default function ImageUploadClientPage() {
     }
 
     return () => {
-      // Cleanup camera stream when component unmounts or mode changes from camera
-      if (inputMode === 'camera') {
-        stopCamera();
-      }
+      stopCamera();
     };
   }, [inputMode, stopCamera, toast]);
 
@@ -124,14 +121,21 @@ export default function ImageUploadClientPage() {
   };
 
   const handleCapturePhoto = useCallback(() => {
-    if (videoRef.current && canvasRef.current && isCameraActive) {
+    if (videoRef.current && canvasRef.current && cameraStream && hasCameraPermission === true) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       
-      // Set canvas dimensions to video's displayed size for best quality
-      // or use a fixed reasonable size
+      if (video.readyState < video.HAVE_METADATA || video.videoWidth === 0 || video.videoHeight === 0) {
+        toast({
+          title: 'Camera Not Ready',
+          description: 'Video stream is not ready or dimensions are unavailable. Please wait a moment and try again.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
       const aspectRatio = video.videoWidth / video.videoHeight;
-      let drawWidth = 640; // Max width for capture
+      let drawWidth = 640; 
       let drawHeight = drawWidth / aspectRatio;
 
       if (video.videoWidth < drawWidth) {
@@ -145,31 +149,21 @@ export default function ImageUploadClientPage() {
       const context = canvas.getContext('2d');
       if (context) {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9); // Use JPEG for smaller size
+        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9); 
         setImagePreview(imageDataUrl);
-        setFile(null); // Clear any selected file
-        // Optionally stop camera after capture, or allow retakes
-        // stopCamera(); 
-        // setInputMode('upload'); // Switch back to upload tab to see preview easily? Or stay on camera.
+        setFile(null); 
         toast({ title: 'Photo Captured!', description: 'Ready to generate test.' });
       }
     } else {
-      toast({ title: 'Camera Error', description: 'Could not capture photo. Camera might not be active.', variant: 'destructive' });
+      toast({ title: 'Camera Error', description: 'Could not capture photo. Camera might not be active or permission denied.', variant: 'destructive' });
     }
-  }, [isCameraActive, setImagePreview, toast]);
+  }, [cameraStream, hasCameraPermission, setImagePreview, toast]);
 
   const prepareForNewTest = () => {
-    // Reset only the necessary parts of the context for a new test generation
-    // Keeping imagePreview, file, inputMode intact.
     setQuestions([]);
     // @ts-ignore
     if (typeof _setUserAnswerInternal === 'function' && _setUserAnswerInternal.name === 'setUserAnswersState') {
-      // This is a bit of a hack to reset userAnswers in the context.
-      // A dedicated resetUserAnswers function in context would be cleaner.
-      // For now, assuming setQuestions also clears/resets userAnswers internally in the provider.
     } else {
-        // Fallback if direct access to internal setter not available or signature changes.
-        // This would require TestContext to expose a method like `clearUserAnswers()`
     }
 
     // @ts-ignore
@@ -177,10 +171,6 @@ export default function ImageUploadClientPage() {
     // @ts-ignore
     if (typeof _setEndTimeInternal === 'function') _setEndTimeInternal(null);
     
-    //setIsGenerating is handled by the caller
-    //setGenerationProgress is handled by the caller
-    //setGenerationStatus is handled by the caller
-    //setContextError is handled by the caller
   };
 
 
@@ -223,13 +213,13 @@ export default function ImageUploadClientPage() {
             choices: q.options,
             extractedText,
           });
-          setGenerationProgress(70 + Math.round(((index + 1) / rawQuestions.length) * 25)); // Use 25% for this step
+          setGenerationProgress(70 + Math.round(((index + 1) / rawQuestions.length) * 25)); 
           return { ...q, difficultyAssessment: assessment };
         })
       );
       
       setQuestions(assessedQuestions);
-      setGenerationProgress(95); // before routing
+      setGenerationProgress(95); 
       setGenerationStatus('Test generated successfully!');
       setGenerationProgress(100);
       router.push('/test');
@@ -307,19 +297,19 @@ export default function ImageUploadClientPage() {
               )}
                <video 
                 ref={videoRef} 
-                className={`w-full aspect-video rounded-md bg-muted ${!isCameraActive ? 'hidden' : ''}`} 
+                className={`w-full aspect-video rounded-md bg-muted ${!(hasCameraPermission === true && cameraStream) ? 'hidden' : ''}`} 
                 autoPlay 
                 muted 
                 playsInline
               />
-              {!isCameraActive && hasCameraPermission !== false && (
-                 <div className="flex items-center justify-center text-muted-foreground p-4 border border-dashed rounded-md min-h-[200px]">
-                    {hasCameraPermission === null ? "Initializing camera..." : "Camera is not active. Grant permission if prompted."}
+              {inputMode === 'camera' && !(hasCameraPermission === true && cameraStream) && hasCameraPermission !== false && (
+                 <div className="flex items-center justify-center text-muted-foreground p-4 border border-dashed rounded-md min-h-[200px] aspect-video">
+                    {hasCameraPermission === null ? "Initializing camera..." : "Attempting to start camera. Grant permission if prompted."}
                  </div>
               )}
 
-              {isCameraActive && (
-                <Button onClick={handleCapturePhoto} className="w-full" disabled={isGenerating}>
+              {hasCameraPermission === true && cameraStream && (
+                <Button onClick={handleCapturePhoto} className="w-full" disabled={isGenerating || !cameraStream}>
                   <Icons.Camera className="mr-2 h-5 w-5" /> Capture Photo
                 </Button>
               )}
