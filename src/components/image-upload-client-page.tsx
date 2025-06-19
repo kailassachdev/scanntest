@@ -49,7 +49,7 @@ export default function ImageUploadClientPage() {
 
   useEffect(() => {
     let streamInstance: MediaStream | null = null;
-    let active = true; // To prevent updates if component unmounts or mode changes during async ops
+    let active = true;
 
     const cleanupCamera = () => {
       active = false;
@@ -60,12 +60,10 @@ export default function ImageUploadClientPage() {
         videoRef.current.srcObject = null;
       }
       setCameraStream(null);
-      // Optionally reset hasCameraPermission, or leave it to reflect last status
-      // setHasCameraPermission(null); 
     };
 
     if (inputMode === 'camera') {
-      setHasCameraPermission(null); // Reset permission status on mode switch to show "initializing"
+      setHasCameraPermission(null); 
       const getCameraPermissionAsync = async () => {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
           if (active) {
@@ -85,19 +83,9 @@ export default function ImageUploadClientPage() {
             setHasCameraPermission(true);
             if (videoRef.current) {
               videoRef.current.srcObject = streamInstance;
-              videoRef.current.play().catch(error => {
-                console.error("Error attempting to play video:", error);
-                if (active) {
-                  toast({ variant: 'destructive', title: 'Camera Error', description: 'Could not start video playback.' });
-                  streamInstance?.getTracks().forEach(track => track.stop());
-                  setCameraStream(null);
-                  setHasCameraPermission(false);
-                  if (videoRef.current) videoRef.current.srcObject = null;
-                }
-              });
+              // Explicit play removed to rely on autoPlay and prevent interruption errors
             }
           } else {
-            // Not active, component unmounted or inputMode changed during async op
             streamInstance?.getTracks().forEach(track => track.stop());
           }
         } catch (error) {
@@ -114,10 +102,10 @@ export default function ImageUploadClientPage() {
       };
       getCameraPermissionAsync();
     } else {
-      cleanupCamera(); // Handles switching from camera to upload
+      cleanupCamera();
     }
 
-    return cleanupCamera; // Cleanup on unmount or when inputMode changes
+    return cleanupCamera;
   }, [inputMode, toast, setHasCameraPermission, setCameraStream]);
 
 
@@ -300,7 +288,6 @@ export default function ImageUploadClientPage() {
               </div>
             </TabsContent>
             <TabsContent value="camera" className="mt-4 space-y-4">
-              {/* Video element is always in DOM for camera tab, visibility of controls/messages changes */}
               <div className="relative w-full aspect-video rounded-md bg-muted overflow-hidden">
                 <video
                   ref={videoRef}
@@ -321,7 +308,6 @@ export default function ImageUploadClientPage() {
                     <p className="text-xs text-center">Please allow camera access in your browser settings. You might need to refresh.</p>
                   </div>
                 )}
-                {/* Show this if permission is true, but stream is not yet ready (e.g. play failed or still initializing) */}
                 {inputMode === 'camera' && hasCameraPermission === true && !cameraStream && (
                      <div className="absolute inset-0 flex items-center justify-center text-muted-foreground p-4">
                         Attempting to start camera. Grant permission if prompted.
@@ -383,5 +369,3 @@ export default function ImageUploadClientPage() {
     </div>
   );
 }
-
-    
